@@ -15,28 +15,35 @@
  */
 class Solution {
     public List<List<Integer>> levelOrder(TreeNode root) {
-        List<List<Integer>> result= new ArrayList<>();
-        if(root== null){
+        List<List<Integer>> result = new ArrayList<>();
+        
+        // Base Case: Safe exit boundary for empty root structures
+        if (root == null) {
             return result;
         }
-        Queue<TreeNode> queue= new LinkedList<>();
+
+        Queue<TreeNode> queue = new LinkedList<>();
         queue.add(root);
 
-        while(!queue.isEmpty()){
-            List<Integer> levelNodes= new ArrayList<>();
-            int levelSize= queue.size();
-            for(int i=0 ; i<levelSize; i++){
-                TreeNode curr= queue.poll();
-                levelNodes.add(curr.val);
-                if(curr.left != null){
-                    queue.add(curr.left);
+        // Horizontal BFS level calculation loop
+        while (!queue.isEmpty()) {
+            int levelSize = queue.size();
+            List<Integer> currentLevelList = new ArrayList<>();
+
+            for (int i = 0; i < levelSize; i++) {
+                TreeNode currentNode = queue.poll();
+                currentLevelList.add(currentNode.val);
+
+                if (currentNode.left != null) {
+                    queue.add(currentNode.left);
                 }
-                if(curr.right!= null){
-                    queue.add(curr.right);
+                if (currentNode.right != null) {
+                    queue.add(currentNode.right);
                 }
             }
-            result.add(levelNodes);
+            result.add(currentLevelList);
         }
+
         return result;
     }
 }
