@@ -15,20 +15,36 @@
  */
 class Solution {
     public boolean isSameTree(TreeNode p, TreeNode q) {
-        return compare(p,q);
+        return compare(p, q);
     }
-    public static boolean compare(TreeNode p, TreeNode q){
-        if(p==null && q== null){
+
+    // WHAT: Recursive helper that compares two nodes and their subtrees.
+    // WHY: Breaks the "are these trees the same" question into smaller,
+    // identical sub-questions on left and right children.
+    private static boolean compare(TreeNode p, TreeNode q) {
+        // 1. BASE CASE - BOTH NULL: Nothing to compare, so this branch matches.
+        // WHY: If both trees "end" here at the same time, structure agrees.
+        if (p == null && q == null) {
             return true;
         }
-        if(p==null || q== null){
+
+        // 2. BASE CASE - ONE NULL: One tree has a node, the other doesn't.
+        // WHY: Structural mismatch — shapes differ, so trees can't be the same.
+        if (p == null || q == null) {
             return false;
         }
-        if(p.val!= q.val){
+
+        // 3. VALUE CHECK: Both nodes exist here, so it's now safe to read .val.
+        // WHY: Even if structure matches, differing values break the match.
+        if (p.val != q.val) {
             return false;
         }
-        boolean leftSame= compare(p.left, q.left);
-        boolean rightSame= compare(p.right , q.right);
+
+        // 4. RECURSIVE STEP: Check left subtrees AND right subtrees.
+        // WHY: The whole tree only matches if BOTH sides independently match.
+        boolean leftSame = compare(p.left, q.left);
+        boolean rightSame = compare(p.right, q.right);
+
         return leftSame && rightSame;
     }
 }
