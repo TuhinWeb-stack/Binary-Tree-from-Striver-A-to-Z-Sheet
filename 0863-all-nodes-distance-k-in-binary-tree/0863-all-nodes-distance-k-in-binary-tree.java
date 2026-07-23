@@ -9,55 +9,82 @@
  */
 class Solution {
     public List<Integer> distanceK(TreeNode root, TreeNode target, int k) {
-        List<Integer> result= new ArrayList<>();
-        if(root==null){
+        List<Integer> result = new ArrayList<>();
+
+        // 1. EDGE CASE: Empty tree has no nodes at any distance.
+        if (root == null) {
             return result;
         }
-        Map<TreeNode, TreeNode> treeMap= new HashMap<>();
-        buildTreeMap(root,null, treeMap);
-        Queue<TreeNode> q= new LinkedList<>();
-        Set<TreeNode> visited= new HashSet<>();
 
-        int completedDistance=0;
-        q.offer(target);
+        // 2. PHASE 1 - BUILD PARENT MAP: Traverse the whole tree once,
+        // recording each node's parent.
+        // WHY: A tree's pointers only go downward (parent -> child). To
+        // move UPWARD during BFS later, we need a reverse lookup.
+        Map<TreeNode, TreeNode> parentMap = new HashMap<>();
+        buildParentMap(root, null, parentMap);
+
+        // 3. PHASE 2 - BFS SETUP: Standard BFS from the target node.
+        Queue<TreeNode> queue = new LinkedList<>();
+        Set<TreeNode> visited = new HashSet<>();
+
+        queue.offer(target);
         visited.add(target);
 
-        while(!q.isEmpty()){
-            int levelSize= q.size();
-            if(completedDistance==k){
-                for(int i=0; i<levelSize; i++){
-                    result.add(q.poll().val);
+        int currentDistance = 0;
+
+        // 4. MAIN BFS LOOP: Expand outward one distance-level at a time.
+        while (!queue.isEmpty()) {
+            int levelSize = queue.size();
+
+            // WHY: If we've reached the target distance k, every node
+            // CURRENTLY in the queue is exactly k edges away from target -
+            // collect them all and stop immediately (no need to go further).
+            if (currentDistance == k) {
+                for (int i = 0; i < levelSize; i++) {
+                    result.add(queue.poll().val);
                 }
                 return result;
             }
-            
-            for(int j=0; j<levelSize; j++){
-                TreeNode currNode= q.poll();
-                if(currNode.left!=null && !visited.contains(currNode.left)){
-                    q.offer(currNode.left);
-                    visited.add(currNode.left);
-                }
-                if(currNode.right!=null && !visited.contains(currNode.right)){
-                    q.offer(currNode.right);
-                    visited.add(currNode.right);
-                }
-                TreeNode parent= treeMap.get(currNode);
-                if(parent!=null && !visited.contains(parent)){
-                    q.offer(parent);
-                    visited.add(parent);
-                }
 
+            // 5. PROCESS EXACTLY ONE LEVEL: Explore all 3 possible
+            // directions (left, right, parent) for each node in this level.
+            for (int i = 0; i < levelSize; i++) {
+                TreeNode node = queue.poll();
+
+                // WHY: Check all THREE neighbors - this is what makes the
+                // tree behave like an undirected graph. Each neighbor is
+                // only added if it exists AND hasn't been visited yet
+                // (prevents infinite loops, e.g., child -> parent -> same child).
+                if (node.left != null && !visited.contains(node.left)) {
+                    visited.add(node.left);
+                    queue.offer(node.left);
+                }
+                if (node.right != null && !visited.contains(node.right)) {
+                    visited.add(node.right);
+                    queue.offer(node.right);
+                }
+                TreeNode parent = parentMap.get(node);
+                if (parent != null && !visited.contains(parent)) {
+                    visited.add(parent);
+                    queue.offer(parent);
+                }
             }
-            completedDistance++;
+
+            // 6. ADVANCE DISTANCE: We've fully expanded one more edge outward.
+            currentDistance++;
         }
+
+        // WHY: If k is larger than the "radius" of the tree from target
+        // (e.g., Example 2: single node, k=3), the queue empties out
+        // before ever reaching currentDistance == k, so we return empty.
         return result;
     }
-    public static void buildTreeMap(TreeNode child, TreeNode parent, Map<TreeNode, TreeNode> treeMap){
-        if(child==null){
+    private static void buildParentMap(TreeNode node, TreeNode parent, Map<TreeNode, TreeNode> parentMap) {
+        if (node == null) {
             return;
         }
-        treeMap.put(child, parent);
-        buildTreeMap(child.left, child, treeMap);
-        buildTreeMap(child.right, child, treeMap);
+        parentMap.put(node, parent);
+        buildParentMap(node.left, node, parentMap);
+        buildParentMap(node.right, node, parentMap);
     }
 }
